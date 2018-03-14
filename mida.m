@@ -1,12 +1,12 @@
 clear;
-Nk=100;
-Nl=100;
+Nk=150;
+Nl=150;
+deltaE=1;
+couple_onek=1;
+couple_lk_ene=0.5;
 N=Nk+Nl+1;
 ground_ket=ket(N,1);
-ground_ene=10;
-deltaE=100;
-couple_onek=0.5;
-couple_lk_ene=0.0;
+ground_ene=0;
 ek=enerspan(Nk,ground_ene,deltaE);
 el=enerspan(Nl,ground_ene,deltaE);
 hamiall=ground_ene*(ground_ket*ground_ket');
@@ -27,14 +27,24 @@ end
 couplekl=zeros(N);
 for l=1+1:Nk+1
     for k=1+1+Nk:Nk+Nl+1
-        couplekl=couplekl+couple_lk_ene*sign(rand(1)-0.5)*(ket(N,l)*(ket(N,k))'+ket(N,k)*(ket(N,l))');
+        couplekl=couplekl+couple_lk_ene*(ket(N,l)*(ket(N,k))'+ket(N,k)*(ket(N,l))');
     end
 end
 hamiall=hamiall+couple+couplekl;
 t=[0:0.1:10];
 for i=1:1:length(t)
     c(i)=abs(ground_ket'*expm(-1*sqrt(-1)*hamiall*t(i))*ground_ket)^2;
+    pk(i)=0;
+    disp(i)
+    for k=1:1:Nk
+        pk(i)=pk(i)+abs(ket(N,k+1)'*expm(-1*sqrt(-1)*hamiall*t(i))*ground_ket)^2;
+    end
+    pl(i)=0;
+    for l=1:1:Nl
+        pl(i)=pl(i)+abs(ket(N,l+1+Nk)'*expm(-1*sqrt(-1)*hamiall*t(i))*ground_ket)^2;
+    end
 end
-plot(t,c);
-xlabel("time/s")
-ylabel("possibility on 1")
+plot(t,c,t,pk,t,pl);
+xlabel('time/$\hbar$','interpreter','latex');
+ylabel("possibility");
+legend(["system in state one","system in manifold K","System in manifold L"])
